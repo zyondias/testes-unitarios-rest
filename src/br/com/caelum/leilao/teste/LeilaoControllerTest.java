@@ -3,6 +3,7 @@ package br.com.caelum.leilao.teste;
 import static com.jayway.restassured.RestAssured.given;
 import static org.junit.Assert.assertEquals;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -46,4 +47,38 @@ public class LeilaoControllerTest {
 		assertEquals(esperado, valorTotal);
 	}
 	
+	@Test
+	public void criarLeilao(){
+		Leilao newLeilao = new Leilao();
+		newLeilao.setNome("MacBook");
+		newLeilao.setUsado(true);
+		newLeilao.setUsuario(mauricio);
+		newLeilao.setValorInicial(1000.00);
+		
+		XmlPath path = given()
+							.header("Accept","application/xml")
+							.contentType("application/xml")
+							.body(newLeilao)
+						.expect()
+							.statusCode(200)
+						.when()
+							.post("/leiloes")
+						.andReturn()
+							.xmlPath();
+		Leilao actual = path.getObject("leilao", Leilao.class);
+		
+		assertEquals("MacBook", actual.getNome());
+		Assert.assertTrue(actual.isUsado());
+		assertEquals(mauricio, actual.getUsuario());
+		assertEquals(1000.00,actual.getValorInicial(),0.0001);
+//		
+		//deletando usuario
+		given()
+			.contentType("application/xml")
+			.body(actual)
+		.expect()
+			.statusCode(200)
+		.when()
+			.delete("/leiloes/deleta").andReturn().asString();
+	}
 }

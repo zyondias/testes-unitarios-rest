@@ -51,4 +51,33 @@ public class UsuarioControllerTest {
 		assertEquals(mauricio, usuario);
 		
 	}
+	
+	@Test
+	public void criarUsuarioComPost(){
+		XmlPath path = given()
+						.header("Accept", "application/xml")
+						.contentType("application/xml")
+						.body(new Usuario("Zyon Dias", "zyon.dias@hotmail.com"))
+					//testando que a resposta tem q ser 200
+					.expect()
+						.statusCode(200)
+					.when()
+						.post("/usuarios")
+					.andReturn()
+						.xmlPath();
+		
+		Usuario actual = path.getObject("usuario", Usuario.class);
+		
+		assertEquals("Zyon Dias", actual.getNome());
+		assertEquals("zyon.dias@hotmail.com",actual.getEmail());
+		
+		//deletando usuario
+		given()
+			.contentType("application/xml")
+			.body(actual)
+		.expect()
+			.statusCode(200)
+		.when()
+			.delete("/usuarios/deleta").andReturn().asString();
+	}
 }
